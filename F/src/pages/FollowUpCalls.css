@@ -1,0 +1,75 @@
+.fuc-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* background: rgba(0, 0, 0, 0.4); */
+  /* height: 100vh; */
+  /* padding: 40px; */
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+.fuc-card {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  width: 600px;
+}
+
+.fuc-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.fuc-subtitle {
+  margin-top: 4px;
+  /* margin-bottom: 20px; */
+  font-size: 12px;
+  color: #555;
+}
+
+.fuc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.fuc-table thead th {
+  text-align: left;
+  padding: 10px;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.fuc-row td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  color: #333;
+}
+
+.fuc-row.active {
+  background-color: rgba(0, 102, 255, 0.15);
+  border-left: 3px solid #007bff;
+}
+
+.fuc-call-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.3s;
+}
+
+.fuc-call-btn:hover {
+  background-color: #0056b3;
+}

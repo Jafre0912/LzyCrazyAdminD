@@ -1,0 +1,96 @@
+/* Custom Dropdown Styles */
+.custom-dropdown-wrapper {
+  position: relative;
+  font-family: sans-serif;
+}
+
+.custom-dropdown-selector {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: none;
+  background-color: rgba(230, 230, 230, 0.9);
+  color: #333;
+  cursor: pointer;
+  user-select: none; /* Prevents text selection */
+}
+
+.selector-flag {
+  width: 24px;
+  height: auto;
+  margin-right: 12px;
+}
+
+.selector-name {
+  flex-grow: 1; /* Takes up available space */
+  font-size: 16px;
+}
+
+.dropdown-arrow {
+  transition: transform 0.2s ease-in-out;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 8px); /* Position below the selector */
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.options-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 10px 0;
+  overflow-y: auto; /* Makes list scrollable if it's too long */
+}
+
+.options-list li {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.options-list li:hover {
+  background-color: #e9e9e9;
+}
+
+.option-flag {
+  width: 20px;
+  height: auto;
+  margin-right: 10px;
+}
+
+.no-results {
+  padding: 12px 20px;
+  color: #888;
+  cursor: default;
+}
+
+.no-results:hover {
+  background-color: transparent;
+}
