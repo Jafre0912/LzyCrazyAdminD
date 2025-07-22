@@ -195,3 +195,107 @@
 .icon-pink { color: #ff66c4; }
 .icon-white { color: #ffffff; }
 .icon-green { color: #33ff9c; }
+
+
+
+/* --- Styles for Notepad Section --- */
+
+.notepad-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px; /* Thodi jagah neeche */
+}
+
+.notepad-input {
+  flex-grow: 1; /* Text area ko poori jagah dega */
+  height: 120px; /* Text area ki height */
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  font-family: sans-serif;
+  resize: vertical; /* User ko height change karne dega */
+  background-color: rgba(230, 230, 230, 0.9);
+}
+
+.save-doc-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #28a745; /* Green color */
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 28px;
+}
+
+.save-doc-btn span {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.save-doc-btn:hover {
+  background-color: #218838;
+}
+
+/* --- Add these styles at the end of UploadPanel.css --- */
+
+.file-dashboard {
+  margin-top: 25px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.dashboard-title {
+  margin: 0 0 10px 0;
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 150px; /* Limit height and make it scrollable */
+  overflow-y: auto;
+}
+
+.file-list-item {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.file-list-item:last-child {
+  margin-bottom: 0;
+}
+
+.file-icon {
+  margin-right: 10px;
+  color: #555;
+}
+
+.file-name {
+  flex-grow: 1;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #666;
+  margin-left: 10px;
+}
