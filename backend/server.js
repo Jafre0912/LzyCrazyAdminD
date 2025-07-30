@@ -12,19 +12,18 @@ const emailRoutes = require('./routes/emailRoutes');
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// ✅ This is the final fix for the CORS error
+const corsOptions = {
+  origin: 'https://lzy-crazy-admin-d.vercel.app', // Your live frontend URL
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
-// ✅ THIS IS THE FINAL FIX
-// This special middleware adds a header to every response
-// that tells ngrok to not show its browser warning. This often fixes image loading issues.
+app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader("ngrok-skip-browser-warning", "true");
   next();
 });
-
-// Make the 'public/uploads' folder accessible via a URL
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // API Routes
@@ -36,7 +35,7 @@ app.use('/api/emails', emailRoutes);
 app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
-console.log("Backend updated");
+
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
