@@ -6,7 +6,6 @@ const path = require('path');
 
 dotenv.config();
 
-// Import all routes
 const uploadRoutes = require('./routes/uploadRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const emailRoutes = require('./routes/emailRoutes');
@@ -14,7 +13,7 @@ const emailRoutes = require('./routes/emailRoutes');
 const app = express();
 
 const corsOptions = {
-  origin: "https://lzy-crazy-admin-d-496u.vercel.app", // Your live frontend URL
+  origin: "https://lzy-crazy-admin-d-496u.vercel.app",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204
@@ -25,7 +24,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-// API Routes
 app.use('/api/upload', uploadRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/emails', emailRoutes);
@@ -34,7 +32,7 @@ app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
 
-const PORT = process.env.PORT || 10000; // Render uses port 10000
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
