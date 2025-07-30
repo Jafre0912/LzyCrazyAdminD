@@ -103,7 +103,10 @@ const handleUploadLogic = (rawInput, type, source) => {
   });
 
   const updatedActive = new Set([...existingData[resultKey], ...processed.newActive]);
-  writeJsonFile(writePath, { [resultKey]: Array.from(updatedActive) });
+  
+  // ✅ This line is commented out to prevent the crash on Render's temporary filesystem.
+  // To re-enable it, you must add a "Persistent Disk" in your Render.com settings.
+  // writeJsonFile(writePath, { [resultKey]: Array.from(updatedActive) });
 
   return {
     type,
@@ -140,20 +143,13 @@ exports.uploadFile = (req, res) => {
     let result;
     
     if (file) {
-      // For Cloudinary, the file is already uploaded, but for local excel processing
-      // we might need the path. Here we assume multer-storage-cloudinary is used,
-      // which doesn't save excel files locally. For excel processing, you'd need a different setup.
-      // We will assume for now that only images are handled by cloudinary in uploadRoutes.
-      // This part needs adjustment if you upload excel to cloudinary.
-      // For now, let's assume it works with the temp path.
       const workbook = xlsx.readFile(file.path);
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
       const rawInput = data.flat().filter(cell => cell != null);
       result = handleUploadLogic(rawInput, type, file.originalname);
-      // Since cloudinary handles the file, we don't need to unlink
-      // if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
     }
     
     res.status(200).json({ message: 'File processed successfully', result });
@@ -169,7 +165,7 @@ exports.uploadImageFromEditor = (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file uploaded.' });
     }
-    // Cloudinary gives us the public URL directly in req.file.path
+    // The public URL comes directly from Cloudinary via req.file.path
     res.status(200).json({ url: req.file.path });
   } catch (error) {
     res.status(500).json({ error: 'Failed to upload image.' });
