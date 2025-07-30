@@ -1,0 +1,34 @@
+/* Add this to MessageSender.css */
+
+/* Style for ReactQuill Editor */
+.ql-container.ql-snow {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  min-height: 200px;
+  font-size: 16px;
+}
+.ql-toolbar.ql-snow {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Style for Attachment List */
+.attachment-list {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.attachment-list p {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+}
+.attachment-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.attachment-list li {
+  padding: 2px 0;
+}

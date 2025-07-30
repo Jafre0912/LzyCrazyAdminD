@@ -163,3 +163,102 @@ textarea {
   border-radius: 4px;
   border: 1px solid #ccc;
 }
+
+
+/* Add this to MessageSender.css */
+.subject-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+
+/* Add these styles to MessageSender.css */
+
+.text-editor {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.menu-bar {
+  background-color: #f1f1f1;
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.menu-bar button {
+  border: none;
+  background-color: transparent;
+  padding: 6px 10px;
+  margin-right: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.menu-bar button.is-active {
+  background-color: #ddd;
+}
+
+.menu-bar button:hover {
+  background-color: #e2e2e2;
+}
+
+.ProseMirror {
+  padding: 12px;
+  min-height: 200px;
+  outline: none;
+  font-size: 16px;
+}
+
+/* This will control the size of images inside the Tiptap editor */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+
+
+/* In MessageSender.css */
+
+.text-editor {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.menu-bar {
+  background-color: #f1f1f1;
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.menu-bar button {
+  border: none;
+  background-color: transparent;
+  padding: 6px 10px;
+  margin-right: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.menu-bar button.is-active {
+  background-color: #ddd;
+}
+
+.menu-bar button:hover {
+  background-color: #e2e2e2;
+}
+
+.ProseMirror {
+  padding: 12px;
+  min-height: 200px;
+  outline: none;
+  font-size: 16px;
+  white-space: pre-wrap; /* ✅ This line fixes the warning */
+}
