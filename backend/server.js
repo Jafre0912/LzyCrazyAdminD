@@ -36,7 +36,7 @@ app.use('/api/emails', emailRoutes);
 app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
-
+console.log("Backend updated");
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
