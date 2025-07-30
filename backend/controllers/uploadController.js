@@ -1,9 +1,31 @@
 const fs = require('fs');
 const path = require('path');
 const xlsx = require('xlsx');
-const axios = require('axios'); // We need axios to read the file from Cloudinary
+const axios = require('axios');
 
-// Helper to process NUMBER lists
+const dataDir = process.env.DATA_STORAGE_PATH || 'C:\\lzycrazy-data';
+const contactsFilePath = path.join(dataDir, 'contacts.json');
+const emailsFilePath = path.join(dataDir, 'emails.json');
+
+// Helper function to read from a JSON file
+const readJsonFile = (filePath, defaultData) => {
+  if (fs.existsSync(filePath)) {
+    const fileData = fs.readFileSync(filePath, 'utf-8');
+    try {
+      return JSON.parse(fileData);
+    } catch (e) {
+      return defaultData;
+    }
+  }
+  return defaultData;
+};
+
+// Helper function to write to a JSON file
+const writeJsonFile = (filePath, data) => {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+};
+
+// Helper function to process NUMBER lists
 const processNumberList = (inputArray) => {
   const activeNumbers = new Set();
   const wrongNumbers = new Set();
@@ -22,14 +44,12 @@ const processNumberList = (inputArray) => {
   });
   return {
     totalSubmitted,
-    activeList: Array.from(activeNumbers),
-    totalActive: activeNumbers.size,
-    totalWrong: wrongNumbers.size,
-    totalDuplicates: totalSubmitted - activeNumbers.size - wrongNumbers.size,
+    newActive: Array.from(activeNumbers),
+    newWrong: Array.from(wrongNumbers),
   };
 };
 
-// Helper to process EMAIL lists
+// Helper function to process EMAIL lists
 const processEmailList = (inputArray) => {
   const activeEmails = new Set();
   const wrongEmails = new Set();
@@ -50,10 +70,49 @@ const processEmailList = (inputArray) => {
   });
   return {
     totalSubmitted,
-    activeList: Array.from(activeEmails),
-    totalActive: activeEmails.size,
-    totalWrong: wrongEmails.size,
-    totalDuplicates: totalSubmitted - activeEmails.size - wrongEmails.size,
+    newActive: Array.from(activeEmails),
+    newWrong: Array.from(wrongEmails),
+  };
+};
+
+// Generic function to handle the main upload logic
+const handleUploadLogic = (rawInput, type, source) => {
+  let processed, existingData, writePath, resultKey;
+
+  if (type === 'emails') {
+    processed = processEmailList(rawInput);
+    existingData = readJsonFile(emailsFilePath, { activeEmails: [] });
+    resultKey = 'activeEmails';
+    writePath = emailsFilePath;
+  } else {
+    processed = processNumberList(rawInput);
+    existingData = readJsonFile(contactsFilePath, { activeNumbers: [] });
+    resultKey = 'activeNumbers';
+    writePath = contactsFilePath;
+  }
+  
+  const existingActiveSet = new Set(existingData[resultKey]);
+  let duplicateCount = 0;
+  processed.newActive.forEach(item => {
+    if (existingActiveSet.has(item)) {
+      duplicateCount++;
+    }
+  });
+
+  const updatedActive = new Set([...existingData[resultKey], ...processed.newActive]);
+  
+  // This line is commented out to prevent crashes on Render.
+  // To use this, you must set up a "Persistent Disk" on Render.
+  // writeJsonFile(writePath, { [resultKey]: Array.from(updatedActive) });
+
+  return {
+    type,
+    source,
+    totalSubmitted: processed.totalSubmitted,
+    totalActive: processed.newActive.length,
+    totalWrong: processed.newWrong.length,
+    totalDuplicates: duplicateCount,
+    activeList: processed.newActive,
   };
 };
 
@@ -63,15 +122,7 @@ exports.uploadText = (req, res) => {
     const { notepadText, type } = req.body;
     if (!notepadText) return res.status(400).json({ message: 'No text provided.' });
     const rawInput = notepadText.split(/[\s,]+/);
-    
-    let result;
-    if (type === 'emails') {
-      result = processEmailList(rawInput);
-    } else {
-      result = processNumberList(rawInput);
-    }
-    result.type = type; // Add type to result
-    
+    const result = handleUploadLogic(rawInput, type, 'Text Input');
     res.status(200).json({ message: 'Data processed successfully', result });
   } catch (error) {
     res.status(500).json({ message: 'Error processing text' });
@@ -89,23 +140,16 @@ exports.uploadFile = async (req, res) => {
     let result;
     
     if (file) {
-      // Download the file from Cloudinary to a buffer
       const response = await axios.get(file.path, { responseType: 'arraybuffer' });
       const buffer = response.data;
       
-      // Parse the buffer with xlsx
       const workbook = xlsx.read(buffer, { type: 'buffer' });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
       const rawInput = data.flat().filter(cell => cell != null);
 
-      if (type === 'emails') {
-        result = processEmailList(rawInput);
-      } else {
-        result = processNumberList(rawInput);
-      }
-      result.type = type; // Add type to result
+      result = handleUploadLogic(rawInput, type, file.originalname);
     }
     
     res.status(200).json({ message: 'File processed successfully', result });
