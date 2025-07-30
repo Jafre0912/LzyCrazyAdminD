@@ -7,21 +7,19 @@ const axios = require('axios');
 const processNumberList = (inputArray) => {
   const activeNumbers = new Set();
   const wrongNumbers = new Set();
-  let totalSubmitted = 0;
-  inputArray.forEach(item => {
-    const numbersFound = String(item).match(/\d+/g) || [];
-    totalSubmitted += numbersFound.length;
-    numbersFound.forEach(numStr => {
-      const cleanedNum = numStr.replace(/\D/g, '');
-      if (cleanedNum.length === 10) {
-        activeNumbers.add(cleanedNum);
-      } else {
-        wrongNumbers.add(numStr);
-      }
-    });
+  const numberRegex = /^\d{10}$/;
+   inputArray.forEach(item => {
+    const trimmedItem = String(item).trim();
+    if (numberRegex.test(trimmedItem)) {
+      activeNumbers.add(trimmedItem);
+    } else {
+      if(trimmedItem) wrongNumbers.add(trimmedItem);
+    }
   });
-  const activeList = Array.from(activeNumbers);
-  const duplicates = totalSubmitted - activeList.length - wrongNumbers.size;
+ const activeList = Array.from(activeNumbers);
+  const totalSubmitted = activeList.length + wrongNumbers.size;
+  // This logic for duplicates now only checks within the current upload
+  const duplicates = inputArray.length - totalSubmitted;
   return {
     totalSubmitted,
     activeList,

@@ -12,18 +12,21 @@ const emailRoutes = require('./routes/emailRoutes');
 
 const app = express();
 
-// ✅ This is the final fix for the CORS error
+// This is the final, most robust CORS configuration
 const corsOptions = {
-  origin: 'https://lzy-crazy-admin-d-496u.vercel.app/', // Your live frontend URL  https://lzy-crazy-admin-d-496u.vercel.app/
-  optionsSuccessStatus: 200
+  origin: "https://lzy-crazy-admin-d-496u.vercel.app",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204
 };
+
+// This handles the pre-flight requests from the browser
+app.options('*', cors(corsOptions));
+// This handles all other requests
 app.use(cors(corsOptions));
 
+
 app.use(express.json());
-app.use((req, res, next) => {
-  res.setHeader("ngrok-skip-browser-warning", "true");
-  next();
-});
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // API Routes
@@ -31,12 +34,10 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/emails', emailRoutes);
 
-// Welcome route
 app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
 
-// Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
