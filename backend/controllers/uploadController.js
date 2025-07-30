@@ -7,8 +7,9 @@ const axios = require('axios');
 const processNumberList = (inputArray) => {
   const activeNumbers = new Set();
   const wrongNumbers = new Set();
-  const numberRegex = /^\d{10}$/;
-   inputArray.forEach(item => {
+  const numberRegex = /^\d{10}$/; // Matches exactly 10 digits
+
+  inputArray.forEach(item => {
     const trimmedItem = String(item).trim();
     if (numberRegex.test(trimmedItem)) {
       activeNumbers.add(trimmedItem);
@@ -16,10 +17,13 @@ const processNumberList = (inputArray) => {
       if(trimmedItem) wrongNumbers.add(trimmedItem);
     }
   });
- const activeList = Array.from(activeNumbers);
-  const totalSubmitted = activeList.length + wrongNumbers.size;
-  // This logic for duplicates now only checks within the current upload
-  const duplicates = inputArray.length - totalSubmitted;
+
+  const activeList = Array.from(activeNumbers);
+  
+  // ✅ Corrected this logic for accuracy
+  const totalSubmitted = inputArray.length;
+  const duplicates = totalSubmitted - activeList.length - wrongNumbers.size;
+
   return {
     totalSubmitted,
     activeList,
@@ -65,15 +69,8 @@ exports.uploadText = (req, res) => {
     const { notepadText, type } = req.body;
     if (!notepadText) return res.status(400).json({ message: 'No text provided.' });
     const rawInput = notepadText.split(/[\s,]+/);
-    
-    let result;
-    if (type === 'emails') {
-      result = processEmailList(rawInput);
-    } else {
-      result = processNumberList(rawInput);
-    }
+    let result = (type === 'emails') ? processEmailList(rawInput) : processNumberList(rawInput);
     result.type = type;
-    
     res.status(200).json({ message: 'Data processed successfully', result });
   } catch (error) {
     res.status(500).json({ message: 'Error processing text' });
@@ -89,25 +86,17 @@ exports.uploadFile = async (req, res) => {
     }
     const file = req.files[0];
     let result;
-    
     if (file) {
       const response = await axios.get(file.path, { responseType: 'arraybuffer' });
       const buffer = response.data;
-      
       const workbook = xlsx.read(buffer, { type: 'buffer' });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
       const rawInput = data.flat().filter(cell => cell != null);
-
-      if (type === 'emails') {
-        result = processEmailList(rawInput);
-      } else {
-        result = processNumberList(rawInput);
-      }
+      result = (type === 'emails') ? processEmailList(rawInput) : processNumberList(rawInput);
       result.type = type;
     }
-    
     res.status(200).json({ message: 'File processed successfully', result });
   } catch (error) {
     console.error(error);
