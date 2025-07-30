@@ -7,8 +7,8 @@ import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
 import MenuBar from './MenuBar';
 
-const API_URL ='http://localhost:5001/api/emails';
-const IMAGE_UPLOAD_URL ='http://localhost:5001/api/upload/image';
+const API_URL = 'https://lzycrazyadmind.onrender.com/api/emails';
+const IMAGE_UPLOAD_URL = 'https://lzycrazyadmind.onrender.com/api/upload/image';
 
 const EmailSender = () => {
   const [subject, setSubject] = useState('');

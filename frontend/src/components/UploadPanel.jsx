@@ -16,7 +16,7 @@ import { MdError, MdCheckCircle } from "react-icons/md";
 import { countries } from '../countries';
 import CountrySelector from './CountrySelector';
 
-const API_URL = 'http://localhost:5001/api/upload';
+const API_URL = 'https://lzycrazyadmind.onrender.com/api/upload';
 
 const fileTypes = {
   excel: '.xls,.xlsx,text/csv',
