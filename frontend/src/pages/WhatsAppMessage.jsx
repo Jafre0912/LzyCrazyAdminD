@@ -4,7 +4,8 @@ import axios from 'axios';
 import './MessageSender.css';
 import paperclipIcon from '../assets/imgicon.png';
 
-const API_URL = 'http://localhost:5001/api/messages';
+// Using your live Render backend URL
+const API_URL = 'https://lzycrazyadmind.onrender.com/api/messages';
 
 const MessageSender = ({ type }) => {
   const [image, setImage] = useState(null);
@@ -16,8 +17,9 @@ const MessageSender = ({ type }) => {
   const location = useLocation();
 
   useEffect(() => {
-    if (location.state && location.state.activeNumbers) {
-      const formattedData = location.state.activeNumbers.map(num => ({
+    // Correctly reads 'activeList' to match UploadPanel
+    if (location.state && location.state.activeList) {
+      const formattedData = location.state.activeList.map(num => ({
         phone: `+91${num}`,
         type: 'WhatsApp',
         status: 'Valid',
@@ -47,14 +49,12 @@ const MessageSender = ({ type }) => {
   };
 
   const handleSendMessage = async () => {
-    let finalNumberList = [];
-    if (target === 'all') {
-      finalNumberList = numberList.map(item => item.phone);
-    } else {
-      finalNumberList = Array.from(selectedRows);
-    }
-
-    if (finalNumberList.length === 0) {
+    // Logic to select all or only checked numbers
+    const phoneNumbersOnly = (target === 'all') 
+      ? numberList.map(item => item.phone) 
+      : Array.from(selectedRows);
+    
+    if (phoneNumbersOnly.length === 0) {
       alert(`Please select at least one number to send a message.`);
       return;
     }
@@ -65,16 +65,18 @@ const MessageSender = ({ type }) => {
 
     const formData = new FormData();
     formData.append('message', message);
-    formData.append('numbers', JSON.stringify(finalNumberList));
+    formData.append('numbers', JSON.stringify(phoneNumbersOnly));
     if (image) {
       formData.append('image', image);
     }
 
     try {
+      alert('Sending message(s)...');
       const response = await axios.post(`${API_URL}/send`, formData);
       alert(response.data.message);
     } catch (error) {
-      alert('Failed to send messages.');
+      alert('Failed to send messages. See console for details.');
+      console.error(error);
     }
   };
 
@@ -122,19 +124,12 @@ const MessageSender = ({ type }) => {
         />
         <div className="options1">
           <div className="options">
-            {/* ✅ The Attach Image JSX is now back */}
             <div className="attach-image">
               <label htmlFor="file-upload" className="image-upload-label">
                 <img src={paperclipIcon} alt="Attach" className="icon" />
                 Attach Image
               </label>
-              <input
-                type="file"
-                id="file-upload"
-                accept="image/*"
-                onChange={handleImageUpload}
-                style={{ display: 'none' }}
-              />
+              <input type="file" id="file-upload" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
             </div>
             <label>
               <input type="checkbox" /> Schedule
@@ -143,12 +138,8 @@ const MessageSender = ({ type }) => {
           <div className="target-options">
             <label>Target</label>
             <div>
-              <label>
-                <input type="radio" name="target" value="all" checked={target === 'all'} onChange={() => setTarget('all')} /> All
-              </label>
-              <label>
-                <input type="radio" name="target" value="selected" checked={target === 'selected'} onChange={() => setTarget('selected')} /> Selected Only
-              </label>
+              <label><input type="radio" name="target" value="all" checked={target === 'all'} onChange={() => setTarget('all')} /> All</label>
+              <label><input type="radio" name="target" value="selected" checked={target === 'selected'} onChange={() => setTarget('selected')} /> Selected Only</label>
             </div>
           </div>
           {imagePreview && (
