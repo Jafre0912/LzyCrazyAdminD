@@ -1,9 +1,8 @@
-// backend/routes/uploadRoutes.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary'); // Use Cloudinary storage
-const upload = multer({ storage }); // Tell multer to use Cloudinary
+const { storage } = require('../config/cloudinary');
+const upload = multer({ storage });
 
 const { uploadText, uploadFile, uploadImageFromEditor } = require('../controllers/uploadController');
 
