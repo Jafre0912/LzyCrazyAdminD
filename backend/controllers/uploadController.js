@@ -1,35 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const xlsx = require('xlsx');
+const axios = require('axios'); // We need axios to read the file from Cloudinary
 
-const dataDir = process.env.DATA_STORAGE_PATH || 'C:\\lzycrazy-data';
-const contactsFilePath = path.join(dataDir, 'contacts.json');
-const emailsFilePath = path.join(dataDir, 'emails.json');
-
-// Helper function to read from a JSON file
-const readJsonFile = (filePath, defaultData) => {
-  if (fs.existsSync(filePath)) {
-    const fileData = fs.readFileSync(filePath, 'utf-8');
-    try {
-      return JSON.parse(fileData);
-    } catch (e) {
-      return defaultData;
-    }
-  }
-  return defaultData;
-};
-
-// Helper function to write to a JSON file
-const writeJsonFile = (filePath, data) => {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-};
-
-// Helper function to process NUMBER lists
+// Helper to process NUMBER lists
 const processNumberList = (inputArray) => {
   const activeNumbers = new Set();
   const wrongNumbers = new Set();
   let totalSubmitted = 0;
-
   inputArray.forEach(item => {
     const numbersFound = String(item).match(/\d+/g) || [];
     totalSubmitted += numbersFound.length;
@@ -42,21 +20,21 @@ const processNumberList = (inputArray) => {
       }
     });
   });
-
   return {
     totalSubmitted,
-    newActive: Array.from(activeNumbers),
-    newWrong: Array.from(wrongNumbers),
+    activeList: Array.from(activeNumbers),
+    totalActive: activeNumbers.size,
+    totalWrong: wrongNumbers.size,
+    totalDuplicates: totalSubmitted - activeNumbers.size - wrongNumbers.size,
   };
 };
 
-// Helper function to process EMAIL lists
+// Helper to process EMAIL lists
 const processEmailList = (inputArray) => {
   const activeEmails = new Set();
   const wrongEmails = new Set();
   let totalSubmitted = 0;
   const allowedDomains = ['@gmail.com', '@domain.com', '@outlook.com', '@hotmail.com'];
-
   inputArray.forEach(item => {
     const emailsFound = String(item).match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}/g) || [];
     totalSubmitted += emailsFound.length;
@@ -70,52 +48,12 @@ const processEmailList = (inputArray) => {
       }
     });
   });
-
   return {
     totalSubmitted,
-    newActive: Array.from(activeEmails),
-    newWrong: Array.from(wrongEmails),
-  };
-};
-
-// Generic function to handle the main upload logic
-const handleUploadLogic = (rawInput, type, source) => {
-  let processed, existingData, writePath, resultKey;
-
-  if (type === 'emails') {
-    processed = processEmailList(rawInput);
-    existingData = readJsonFile(emailsFilePath, { activeEmails: [] });
-    resultKey = 'activeEmails';
-    writePath = emailsFilePath;
-  } else {
-    processed = processNumberList(rawInput);
-    existingData = readJsonFile(contactsFilePath, { activeNumbers: [] });
-    resultKey = 'activeNumbers';
-    writePath = contactsFilePath;
-  }
-  
-  const existingActiveSet = new Set(existingData[resultKey]);
-  let duplicateCount = 0;
-  processed.newActive.forEach(item => {
-    if (existingActiveSet.has(item)) {
-      duplicateCount++;
-    }
-  });
-
-  const updatedActive = new Set([...existingData[resultKey], ...processed.newActive]);
-  
-  // ✅ This line is commented out to prevent the crash on Render's temporary filesystem.
-  // To re-enable it, you must add a "Persistent Disk" in your Render.com settings.
-  // writeJsonFile(writePath, { [resultKey]: Array.from(updatedActive) });
-
-  return {
-    type,
-    source,
-    totalSubmitted: processed.totalSubmitted,
-    totalActive: processed.newActive.length,
-    totalWrong: processed.newWrong.length,
-    totalDuplicates: duplicateCount,
-    activeList: processed.newActive,
+    activeList: Array.from(activeEmails),
+    totalActive: activeEmails.size,
+    totalWrong: wrongEmails.size,
+    totalDuplicates: totalSubmitted - activeEmails.size - wrongEmails.size,
   };
 };
 
@@ -125,7 +63,15 @@ exports.uploadText = (req, res) => {
     const { notepadText, type } = req.body;
     if (!notepadText) return res.status(400).json({ message: 'No text provided.' });
     const rawInput = notepadText.split(/[\s,]+/);
-    const result = handleUploadLogic(rawInput, type, 'Text Input');
+    
+    let result;
+    if (type === 'emails') {
+      result = processEmailList(rawInput);
+    } else {
+      result = processNumberList(rawInput);
+    }
+    result.type = type; // Add type to result
+    
     res.status(200).json({ message: 'Data processed successfully', result });
   } catch (error) {
     res.status(500).json({ message: 'Error processing text' });
@@ -133,7 +79,7 @@ exports.uploadText = (req, res) => {
 };
 
 // Controller for file uploads
-exports.uploadFile = (req, res) => {
+exports.uploadFile = async (req, res) => {
   try {
     const { type } = req.body;
     if (!req.files || req.files.length === 0) {
@@ -143,13 +89,23 @@ exports.uploadFile = (req, res) => {
     let result;
     
     if (file) {
-      const workbook = xlsx.readFile(file.path);
+      // Download the file from Cloudinary to a buffer
+      const response = await axios.get(file.path, { responseType: 'arraybuffer' });
+      const buffer = response.data;
+      
+      // Parse the buffer with xlsx
+      const workbook = xlsx.read(buffer, { type: 'buffer' });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
       const rawInput = data.flat().filter(cell => cell != null);
-      result = handleUploadLogic(rawInput, type, file.originalname);
-      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+
+      if (type === 'emails') {
+        result = processEmailList(rawInput);
+      } else {
+        result = processNumberList(rawInput);
+      }
+      result.type = type; // Add type to result
     }
     
     res.status(200).json({ message: 'File processed successfully', result });
@@ -165,7 +121,6 @@ exports.uploadImageFromEditor = (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file uploaded.' });
     }
-    // The public URL comes directly from Cloudinary via req.file.path
     res.status(200).json({ url: req.file.path });
   } catch (error) {
     res.status(500).json({ error: 'Failed to upload image.' });
