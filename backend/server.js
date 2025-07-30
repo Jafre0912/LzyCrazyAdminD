@@ -14,7 +14,7 @@ const app = express();
 
 // ✅ This is the final fix for the CORS error
 const corsOptions = {
-  origin: 'https://lzy-crazy-admin-d.vercel.app', // Your live frontend URL
+  origin: 'https://lzy-crazy-admin-d-496u.vercel.app/', // Your live frontend URL  https://lzy-crazy-admin-d-496u.vercel.app/
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
