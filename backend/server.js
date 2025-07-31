@@ -13,7 +13,7 @@ const emailRoutes = require('./routes/emailRoutes');
 const app = express();
 
 const corsOptions = {
-  origin: "https://lzy-crazy-admin-d-496u.vercel.app",
+  origin: "http://localhost:3000", // For local frontend
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204
@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
